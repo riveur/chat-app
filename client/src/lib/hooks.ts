@@ -1,6 +1,8 @@
+import { Message } from "@/app/types";
 import { useEffect, useState } from "react";
+import { messages as data } from "@/data";
 
-export function useLocalStorage(key: string, defaultValue: string|null) {
+export function useLocalStorage(key: string, defaultValue: string | null) {
     const [value, setValue] = useState(() => {
         let currentValue: any;
 
@@ -21,3 +23,17 @@ export function useLocalStorage(key: string, defaultValue: string|null) {
 
     return [value, setValue];
 };
+
+export function useMessages(key: string) {
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    useEffect(() => {
+        if (data[key]) {
+            setMessages(data[key]);
+        } else {
+            setMessages([]);
+        }
+    }, [key]);
+
+    return { messages, setMessages };
+}

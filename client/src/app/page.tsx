@@ -19,7 +19,7 @@ export default function Home() {
   }
 
   return (
-    <main>
+    <main className="h-full">
       {isLoggedIn() ?
         <ChatRoom /> :
         (<div className="h-screen flex justify-center items-center">

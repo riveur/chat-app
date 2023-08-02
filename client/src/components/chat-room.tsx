@@ -31,28 +31,26 @@ export function ChatRoom() {
         setSelectedUser(userId);
     }
 
+
+
     return (
         <div className="container h-full">
-            <section className="h-full border-x border-border flex flex-col">
-                <div className="w-full border-b border-border flex">
-                    <div className="min-w-[300px] px-4 py-4 h-20 grid content-center">
-                        <h1 className="text-center text-xl font-bold">Chat App</h1>
-                    </div>
-                    <div className="p-4 border-l border-border flex justify-between items-center w-full">
-                        <h2 className="font-semibold text-lg">{user.username}</h2>
-                        <div>
-                            <Button onClick={() => setUser(null)}>Log out</Button>
+            <section className="h-full flex flex-col">
+                <div className="flex w-full h-full overflow-hidden">
+                    <aside className="min-w-[300px] h-full overflow-y-auto border-l">
+                        <div className="h-16 grid content-center">
+                            <h1 className="text-center text-xl font-bold">Chat App</h1>
                         </div>
-                    </div>
-                </div>
-                <div className="flex w-full overflow-hidden">
-                    <aside className="min-w-[300px] h-full overflow-y-auto p-4">
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col">
                             {users.map((u, idx) => <UserCard key={idx} user={u} active={u.id === selectedUser} onClick={() => handleClickUserCard(u.id)} />)}
                         </div>
                     </aside>
-                    <div className="border-l border-border h-full w-full">
+                    <div className="h-full w-full border-x">
                         <div className="h-full w-full flex flex-col">
+                            <div className="border-b h-16 p-4 flex justify-between items-center">
+                                <span className="font-bold">{users.find(u => u.id === selectedUser)?.username || 'Messages'}</span>
+                                <Button onClick={() => setUser(null)}>Log out</Button>
+                            </div>
                             <div className="h-full p-4 overflow-y-auto">
                                 <div className="h-full flex flex-col gap-6">
                                     {
@@ -64,7 +62,7 @@ export function ChatRoom() {
                                     }
                                 </div>
                             </div>
-                            <div className="border-t border-border flex-shrink">
+                            <div className="flex-shrink border-t">
                                 <form>
                                     <div className="px-4 flex items-center justify-between">
                                         <Input id="message" name="message" className="h-14 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0" placeholder="Your message" />
@@ -95,7 +93,7 @@ const UserCard = forwardRef<HTMLDivElement, { user: User, active?: boolean } & H
             ref={ref}
             {...props}
             className={cn(
-                'flex gap-4 items-center border rounded px-4 p-2 hover:bg-secondary hover:cursor-pointer',
+                'flex gap-4 items-center px-4 py-4 hover:bg-secondary hover:cursor-pointer',
                 active && 'bg-secondary'
             )}
         >

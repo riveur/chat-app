@@ -1,0 +1,14 @@
+{
+  "name": "chat-app",
+  "version": "1.0.0",
+  "description": "Real-time chat app with Next.js & Socket.io",
+  "scripts": {
+    "dev": "concurrently \"cd server && yarn dev\" \"cd client && yarn dev\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

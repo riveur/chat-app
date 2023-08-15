@@ -2,22 +2,35 @@
 
 import { useAppContext } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
-import { HTMLAttributes, forwardRef, FC, useState } from "react";
+import { HTMLAttributes, forwardRef, FC, useState, useRef, useEffect } from "react";
 import { Message, User } from "@/app/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { SendHorizonal } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { useMessages, useUsers } from "@/lib/hooks";
 import { MessageSquare, Frown } from 'lucide-react';
+import { SendMessageForm, SendMessageFormInputs } from "./forms/send-message-form";
+import { SubmitHandler } from "react-hook-form";
+import { socket } from "@/lib/socket";
 
-export function ChatRoom() {
+export const ChatRoom: FC<{ users?: User[], conversations?: Record<User['id'], Message[]> }> = ({ users = [], conversations = {} }) => {
     const { user, setUser } = useAppContext();
-    const { messages } = useMessages('');
-    const { users } = useUsers();
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const formRef = useRef<HTMLFormElement>(null);
+
+    const messages = (selectedUser && conversations[selectedUser.id]) ? conversations[selectedUser.id] : [];
+
+    useEffect(() => {
+        if (!users.find(u => u.id === selectedUser?.id)) {
+            setSelectedUser(null);
+        }
+    }, [users, selectedUser]);
 
     if (!user) {
         return null;
+    }
+
+    const handleSendMessageSubmit: SubmitHandler<SendMessageFormInputs> = ({ message }, event) => {
+        socket.emit('send:message', { message, receiverId: selectedUser?.id, senderId: user.id });
+        formRef?.current?.reset();
     }
 
     return (
@@ -29,19 +42,19 @@ export function ChatRoom() {
                             <h1 className="text-center text-xl font-bold">Chat App</h1>
                         </div>
                         <div className="flex flex-col">
-                            {users.map((u, idx) => <UserCard key={idx} user={u} />)}
+                            {users.map((u) => <UserCard key={u.id} user={u} onClick={() => setSelectedUser(u)} active={selectedUser?.id === u.id} />)}
                         </div>
                     </aside>
                     <div className="h-full w-full border-x">
                         <div className="h-full w-full flex flex-col">
                             <div className="border-b h-16 p-4 flex justify-between items-center">
                                 <span className="font-bold">Messages</span>
-                                <Button onClick={() => setUser(null)}>Log out</Button>
+                                <Button>Log out</Button>
                             </div>
                             <div className="h-full p-4 overflow-y-auto">
                                 <div className="h-full flex flex-col gap-6">
-                                    {messages.length !== 0 ?
-                                        <Messages messages={messages} userId={user.id} /> :
+                                    {users.length !== 0 ?
+                                        <Messages messages={messages} senderId={user.id} users={users} /> :
                                         <div className="h-full grid content-center">
                                             <div className="flex flex-col items-center gap-4">
                                                 <Frown size={60} />
@@ -52,12 +65,7 @@ export function ChatRoom() {
                                 </div>
                             </div>
                             <div className="flex-shrink border-t">
-                                <form>
-                                    <div className="px-4 flex items-center justify-between">
-                                        <Input id="message" name="message" className="h-14 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0" placeholder="Your message" />
-                                        <Button size="icon" className="rounded-full"><SendHorizonal size={16} /></Button>
-                                    </div>
-                                </form>
+                                <SendMessageForm ref={formRef} onSubmit={handleSendMessageSubmit} />
                             </div>
                         </div>
                     </div>
@@ -94,10 +102,10 @@ const UserCard = forwardRef<HTMLDivElement, { user: User, active?: boolean } & H
 
 UserCard.displayName = "UserCard";
 
-const ChatMessage = forwardRef<HTMLDivElement, { message: string, senderId: string, received: boolean } & HTMLAttributes<HTMLDivElement>>(({ message, senderId, received, className, ...props }, ref) => {
+const ChatMessage = forwardRef<HTMLDivElement, { message: string, user?: User, received: boolean } & HTMLAttributes<HTMLDivElement>>(({ message, user, received, className, ...props }, ref) => {
     return (
         <div ref={ref} {...props} className={cn(className, 'flex items-center gap-4', !received && 'flex-row-reverse')}>
-            {received && <UserAvatar username={senderId} />}
+            {received && <UserAvatar username={user?.username} />}
             <span className={cn('border border-border rounded-full py-2 px-4', received ? 'bg-secondary' : 'dark:bg-blue-500 bg-slate-300')}>{message}</span>
         </div>
     );
@@ -105,11 +113,11 @@ const ChatMessage = forwardRef<HTMLDivElement, { message: string, senderId: stri
 
 ChatMessage.displayName = "ChatMessage";
 
-const Messages: FC<{ messages: Message[], userId: string }> = ({ messages, userId }) => {
+const Messages: FC<{ messages: Message[], senderId: string, users?: User[] }> = ({ messages, senderId, users = [] }) => {
     return (
         <>
             {messages.length !== 0 ?
-                messages.map((message, idx) => <ChatMessage key={idx} {...message} received={message.senderId !== userId} />) :
+                messages.map((message, idx) => <ChatMessage key={idx} message={message.message} received={message.receiverId === senderId} user={users.find(u => u.id === message.senderId)} />) :
                 <div className="flex justify-center items-center h-full">
                     <div className="flex flex-col items-center gap-4">
                         <MessageSquare size={60} />

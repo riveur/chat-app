@@ -1,4 +1,8 @@
-import { Message, User } from "@/app/types";
+import {
+    ConversationsReducerAction,
+    ConversationsReducerActions,
+    ConversationsReducerState,
+} from "@/app/types";
 import { useEffect, useState } from "react";
 
 export function useLocalStorage(key: string, defaultValue: string | null) {
@@ -23,14 +27,17 @@ export function useLocalStorage(key: string, defaultValue: string | null) {
     return [value, setValue];
 };
 
-export function useMessages(key: string) {
-    const [messages, setMessages] = useState<Message[]>([]);
-
-    return { messages, setMessages };
-}
-
-export function useUsers() {
-    const [users, setUsers] = useState<User[]>([]);
-
-    return { users, setUsers };
+export function conversationsReducer(state: ConversationsReducerState, action: ConversationsReducerAction) {
+    const { type, payload } = action;
+    switch (type) {
+        case ConversationsReducerActions.ADD_MESSAGE:
+            const target = state[payload.senderId];
+            if (target) {
+                return { ...state, [payload.senderId]: [...target, payload] };
+            } else {
+                return { ...state, [payload.senderId]: [payload] };
+            }
+        default:
+            return state;
+    }
 }

@@ -13,22 +13,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User } from "@/app/types";
-import { useAppContext } from "@/components/providers/app-provider";
+import { FC } from "react";
 
-type Inputs = Pick<User, "username">;
+export type LoginFormInputs = Pick<User, "username">;
 
-export function LoginForm() {
+export const LoginForm: FC<{ onSubmit: SubmitHandler<LoginFormInputs> }> = ({ onSubmit }) => {
     const {
         register,
         handleSubmit,
         formState: { errors }
-    } = useForm<Inputs>();
-
-    const { setUser } = useAppContext();
-
-    const onSubmit: SubmitHandler<Inputs> = (data) => {
-        setUser({ ...data, id: String(Date.now()) });
-    }
+    } = useForm<LoginFormInputs>();
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>

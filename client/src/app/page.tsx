@@ -2,20 +2,19 @@
 
 import { ChatRoom } from "@/components/chat-room";
 import { LoginForm, LoginFormInputs } from "@/components/forms/login-form";
-import { useAppContext } from "@/components/providers/app-provider";
 import { ThemeToggler } from "@/components/themes/theme-toggler";
 import { socket } from "@/lib/socket";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
-import { ConversationsReducerActions, Message, User } from "@/app/types";
-import { conversationsReducer } from "@/lib/hooks";
+import { Message, User } from "@/app/types";
+import { useUserStore } from "@/stores/useUserStore";
+import { useChatRoomStore } from "@/stores/useChatRoomStore";
 
 export default function Home() {
-  const { setUser } = useAppContext();
+  const { setUser } = useUserStore();
+  const { users, setUsers, addUsers, conversations, addMessageToConversation } = useChatRoomStore();
   const [isClient, setIsClient] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
-  const [conversations, dispatch] = useReducer(conversationsReducer, {});
 
   const onSubmitLogin: SubmitHandler<LoginFormInputs> = ({ username }) => {
     socket.emit('user:login', { username });
@@ -28,22 +27,20 @@ export default function Home() {
   useEffect(() => {
     const onUserConnected = ({ user, state }: { user: User, state: User[] }) => {
       setUser(user);
-      setUsers(state);
+      addUsers(state);
       setIsConnected(true);
     };
 
     const onUserDisconnected = (userId: User['id']) => {
-      setUsers(state => state.filter(u => u.id !== userId));
+      setUsers(users.filter(u => u.id !== userId));
     }
 
     const onUserNew = (user: User) => {
-      setUsers(state => {
-        return [...state, user];
-      })
+      addUsers([user])
     };
 
     const onReceiveMessage = ({ message, senderId, receiverId }: Message) => {
-      dispatch({ type: ConversationsReducerActions.ADD_MESSAGE, payload: { message, senderId, receiverId } });
+      addMessageToConversation({ message, senderId, receiverId });
     };
 
     const onDisconnect = () => {
@@ -65,7 +62,7 @@ export default function Home() {
       socket.off('receive:message', onReceiveMessage);
       socket.off('disconnect', onDisconnect);
     }
-  }, [setUser, users, conversations]);
+  });
 
   if (!isClient) {
     return null;

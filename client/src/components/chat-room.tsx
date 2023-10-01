@@ -1,6 +1,5 @@
 "use client";
 
-import { useAppContext } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { HTMLAttributes, forwardRef, FC, useState, useRef, useEffect } from "react";
 import { Message, User } from "@/app/types";
@@ -10,9 +9,10 @@ import { MessageSquare, Frown } from 'lucide-react';
 import { SendMessageForm, SendMessageFormInputs } from "./forms/send-message-form";
 import { SubmitHandler } from "react-hook-form";
 import { socket } from "@/lib/socket";
+import { useUserStore } from "@/stores/useUserStore";
 
 export const ChatRoom: FC<{ users?: User[], conversations?: Record<User['id'], Message[]> }> = ({ users = [], conversations = {} }) => {
-    const { user, setUser } = useAppContext();
+    const { user } = useUserStore();
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
 
@@ -53,12 +53,20 @@ export const ChatRoom: FC<{ users?: User[], conversations?: Record<User['id'], M
                             </div>
                             <div className="h-full p-4 overflow-y-auto">
                                 <div className="h-full flex flex-col gap-6">
-                                    {users.length !== 0 ?
-                                        <Messages messages={messages} senderId={user.id} users={users} /> :
+                                    {(users.length !== 0 && selectedUser) && <Messages messages={messages} senderId={user.id} users={users} />}
+                                    {(users.length === 0) &&
                                         <div className="h-full grid content-center">
                                             <div className="flex flex-col items-center gap-4">
                                                 <Frown size={60} />
                                                 <p className="font-bold text-lg">There is no users</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    {(messages.length === 0 && selectedUser) &&
+                                        <div className="flex justify-center items-center h-full">
+                                            <div className="flex flex-col items-center gap-4">
+                                                <MessageSquare size={60} />
+                                                <p className="font-bold text-lg">Send a message to start the conversation</p>
                                             </div>
                                         </div>
                                     }
@@ -116,14 +124,15 @@ ChatMessage.displayName = "ChatMessage";
 const Messages: FC<{ messages: Message[], senderId: string, users?: User[] }> = ({ messages, senderId, users = [] }) => {
     return (
         <>
-            {messages.length !== 0 ?
-                messages.map((message, idx) => <ChatMessage key={idx} message={message.message} received={message.receiverId === senderId} user={users.find(u => u.id === message.senderId)} />) :
-                <div className="flex justify-center items-center h-full">
-                    <div className="flex flex-col items-center gap-4">
-                        <MessageSquare size={60} />
-                        <p className="font-bold text-lg">Send a message to start the conversation</p>
-                    </div>
-                </div>}
+            {
+                messages.map((message, idx) =>
+                    <ChatMessage
+                        key={idx}
+                        message={message.message}
+                        received={message.receiverId === senderId}
+                        user={users.find(u => u.id === message.senderId)}
+                    />)
+            }
         </>
     )
 }

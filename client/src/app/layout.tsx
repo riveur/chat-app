@@ -2,7 +2,6 @@ import './globals.css'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { AppProvider } from '@/components/providers/app-provider'
 import { cn } from '@/lib/utils'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -21,9 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={cn(inter.className, 'h-[100dvh] max-h-[100dvh]')}>
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
-          <AppProvider>
-            {children}
-          </AppProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>

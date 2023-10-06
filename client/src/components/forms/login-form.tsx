@@ -12,10 +12,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User } from "@/app/types";
 import { FC } from "react";
 
-export type LoginFormInputs = Pick<User, "username">;
+export type LoginFormInputs = { email: string, password: string };
 
 export const LoginForm: FC<{ onSubmit: SubmitHandler<LoginFormInputs> }> = ({ onSubmit }) => {
     const {
@@ -30,7 +29,7 @@ export const LoginForm: FC<{ onSubmit: SubmitHandler<LoginFormInputs> }> = ({ on
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl">Start the chat</CardTitle>
                     <CardDescription>
-                        Enter your username to begin conversation
+                        Login to start a session
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
@@ -40,9 +39,14 @@ export const LoginForm: FC<{ onSubmit: SubmitHandler<LoginFormInputs> }> = ({ on
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="username">Username</Label>
-                        <Input id="username" type="string" placeholder="john.doe" {...register('username', { required: 'You must provide the username' })} />
-                        {errors.username && <span className="text-sm text-red-500">{errors.username.message}</span>}
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" placeholder="john.doe@example.com" {...register('email', { required: 'You must provide the email' })} />
+                        {errors.email && <span className="text-sm text-red-500">{errors.email.message}</span>}
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">Password</Label>
+                        <Input id="password" type="password" {...register('password', { required: 'You must provide the password' })} />
+                        {errors.password && <span className="text-sm text-red-500">{errors.password.message}</span>}
                     </div>
                 </CardContent>
                 <CardFooter>

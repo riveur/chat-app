@@ -1,4 +1,4 @@
-import { Message, User } from "@/app/types";
+import { UserSchema as User, MessageSchema as Message } from "@/lib/validation";
 import { create } from "zustand";
 
 export type ChatRoomState = {
@@ -6,21 +6,23 @@ export type ChatRoomState = {
     setUsers: (users: User[]) => void;
     addUsers: (users: User[]) => void;
     conversations: Record<User['id'], Message[]>;
+    setConversations: (newConversations: Record<User['id'], Message[]>) => void;
     addMessageToConversation: (message: Message) => void;
 }
 
 export const useChatRoomStore = create<ChatRoomState>((set) => ({
     users: [],
     setUsers: (users) => set(() => ({ users: users })),
-    addUsers: (users) => set((state) => ({ users: [...state.users, ...users] })),
+    addUsers: (newUsers) => set((state) => ({ users: [...state.users, ...newUsers] })),
     conversations: {},
+    setConversations: (newConversations) => set(() => ({ conversations: newConversations })),
     addMessageToConversation: (message) => {
         set((state) => {
-            const target = state.conversations[message.senderId];
+            const target = state.conversations[message.receiver_id];
             if (target) {
-                return { conversations: { ...state.conversations, [message.senderId]: [...target, message] } };
+                return { conversations: { ...state.conversations, [message.receiver_id]: [...target, message] } };
             } else {
-                return { conversations: { ...state.conversations, [message.senderId]: [message] } };
+                return { conversations: { ...state.conversations, [message.receiver_id]: [message] } };
             }
         });
     }

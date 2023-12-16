@@ -30,7 +30,8 @@ Ws.io.on('connection', (socket) => {
   const userId = getSocketUser(socket);
 
   if (!userId) {
-    throw new Error('You must me authenticated');
+    socket.disconnect();
+    return;
   }
 
   connectedUsers.set(userId.toString(), socket.id);

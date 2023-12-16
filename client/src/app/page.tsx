@@ -7,17 +7,19 @@ import { useEffect, useState } from "react";
 import { useChatRoomStore } from "@/stores/useChatRoomStore";
 import { useAuth } from "@/hooks/useAuth";
 import { UserSchema as User, MessageSchema as Message } from "@/lib/validation";
+import { useClient } from "@/hooks/useClient";
 
 export default function Home() {
   const { addMessageToConversation } = useChatRoomStore();
-  const [isClient, setIsClient] = useState(false);
+  const isClient = useClient();
 
   const { data: user } = useAuth();
 
   useEffect(() => {
-    setIsClient(true);
-    socket.connect();
-  }, []);
+    if (user) {
+      socket.connect();
+    }
+  }, [user]);
 
   useEffect(() => {
     const onReceiveMessage = (message: Message) => {

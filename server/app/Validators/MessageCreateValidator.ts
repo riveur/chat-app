@@ -6,7 +6,6 @@ export default class MessageCreateValidator {
 
   public schema = schema.create({
     content: schema.string([rules.maxLength(255)]),
-    senderId: schema.number([rules.exists({ table: 'users', column: 'id' })]),
     receiverId: schema.number([rules.exists({ table: 'users', column: 'id' })]),
   });
 

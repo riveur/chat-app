@@ -32,4 +32,5 @@ Route.group(() => {
     Route.get('/', 'UsersController.index');
     Route.get('/conversations/:userId', 'UsersController.conversations');
   }).prefix('users')
+  Route.post('/messages/send', 'MessagesController.send');
 }).middleware('auth').prefix('api');

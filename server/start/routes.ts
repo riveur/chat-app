@@ -30,6 +30,6 @@ Route.group(() => {
 Route.group(() => {
   Route.group(() => {
     Route.get('/', 'UsersController.index');
-    Route.get('/:id/conversations', 'UsersController.conversations');
+    Route.get('/conversations/:userId', 'UsersController.conversations');
   }).prefix('users')
 }).middleware('auth').prefix('api');

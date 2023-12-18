@@ -1,5 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
-import { groupBy, pipe, sort } from 'remeda';
+import { pipe, sort } from 'remeda';
 
 import User from "App/Models/User";
 
@@ -9,33 +9,21 @@ export default class UsersController {
     return users;
   }
 
-  public async conversations({ request, response }: HttpContextContract) {
-    const userId: string = request.param('id', null);
+  public async conversations({ params, response, auth }: HttpContextContract) {
+    const userId: string = params.userId;
+    const targetUser = await User.findOrFail(userId);
 
-    if (!userId) {
-      return response.badRequest({ message: 'You must provide an id' });
-    }
+    await targetUser.load('sentMessages', (query) => query.where('receiverId', auth.user!.id));
+    await targetUser.load('receivedMessages', (query) => query.where('senderId', auth.user!.id));
 
-    const user = await User.find(userId);
-
-
-    if (!user) {
-      return response.notFound({ message: `The user "${userId}" was not found` });
-    }
-
-    await user.load('sentMessages', (query) => query.orderBy('created_at', 'asc'));
-    await user.load('receivedMessages', (query) => query.orderBy('created_at', 'asc'));
-
-    return pipe(
+    const conversations = pipe(
       [
-        ...user.sentMessages,
-        ...user.receivedMessages.map(message => {
-          message.receiverId = message.senderId;
-          return message;
-        })
+        ...targetUser.sentMessages,
+        ...targetUser.receivedMessages,
       ],
       (messages) => sort(messages, (a, b) => a.createdAt.toSeconds() - b.createdAt.toSeconds()),
-      (messages) => groupBy(messages, (message) => message.receiverId)
-    )
+    );
+
+    return response.ok(conversations);
   }
 }

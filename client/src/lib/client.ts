@@ -1,4 +1,10 @@
-import { ConversationsValidation, UserSchema, UserValidation, UsersValidation } from "./validation";
+import {
+  MessagesValidation,
+  UserSchema,
+  UserValidation,
+  UsersValidation,
+  MessageSchema as Message,
+} from "@/lib/validation";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -44,11 +50,21 @@ export async function getUsers() {
 }
 
 export async function getConversations(userId?: UserSchema['id']) {
-  return fetch(`${API_URL}/api/users/${userId}/conversations`, {
+  return fetch(`${API_URL}/api/users/conversations/${userId}`, {
     method: 'GET',
     headers: defaultsHeaders,
     credentials: 'include'
   })
     .then(response => response.json())
-    .then(ConversationsValidation.parse);
+    .then(MessagesValidation.parse);
+}
+
+export async function sendMessage(data: Pick<Message, "content" | "receiver_id">) {
+  return fetch(`${API_URL}/api/messages/send`, {
+    method: 'POST',
+    headers: defaultsHeaders,
+    credentials: 'include',
+    body: JSON.stringify({ content: data.content, receiverId: data.receiver_id })
+  })
+    .then(response => response.ok ? response.status : Promise.reject(response.json()));
 }

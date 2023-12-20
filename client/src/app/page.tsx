@@ -10,18 +10,18 @@ export default function Home() {
   return (
     <main className="h-full">
       <ChatRoom>
-        <ChatRoom.RightSide>
+        <ChatRoom.LeftSide>
           <ChatRoom.Header />
           <ChatRoom.UserList />
-        </ChatRoom.RightSide>
-        <ChatRoom.LeftSide>
+        </ChatRoom.LeftSide>
+        <ChatRoom.RightSide>
           <ChatRoom.TopBar />
           <div className="h-full grid content-center">
             <div className="flex flex-col items-center gap-4">
               {/* TODO: Display a message based on users state */}
             </div>
           </div>
-        </ChatRoom.LeftSide>
+        </ChatRoom.RightSide>
       </ChatRoom>
       <div className="fixed bottom-0 right-0">
         <div className="relative p-2">

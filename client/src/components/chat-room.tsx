@@ -30,7 +30,7 @@ export const ChatRoom = ({ children }: { children?: React.ReactNode }) => {
   );
 }
 
-const RightSide = ({ children }: { children?: React.ReactNode }) => {
+const LeftSide = ({ children }: { children?: React.ReactNode }) => {
   return (
     <div className="min-w-[300px] h-full overflow-y-auto border-l">
       {children}
@@ -38,7 +38,7 @@ const RightSide = ({ children }: { children?: React.ReactNode }) => {
   );
 }
 
-ChatRoom.RightSide = RightSide;
+ChatRoom.LeftSide = LeftSide;
 
 const Header = ({ title = 'Chat app' }: { title?: string }) => {
   return (
@@ -85,7 +85,7 @@ const UserList = ({ activeUserId }: { activeUserId?: User['id'] }) => {
 
 ChatRoom.UserList = UserList;
 
-const LeftSide = ({ children }: { children?: React.ReactNode }) => {
+const RightSide = ({ children }: { children?: React.ReactNode }) => {
   return (
     <div className="h-full w-full border-x">
       <div className="h-full w-full flex flex-col">
@@ -95,7 +95,7 @@ const LeftSide = ({ children }: { children?: React.ReactNode }) => {
   );
 }
 
-ChatRoom.LeftSide = LeftSide;
+ChatRoom.RightSide = RightSide;
 
 const TopBar = ({ title = 'Messages' }: { title?: string }) => {
   const queryClient = useQueryClient();

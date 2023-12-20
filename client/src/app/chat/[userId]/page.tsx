@@ -51,15 +51,15 @@ export default function Page({ params }: ChatPageProps) {
   return (
     <main className="h-full">
       <ChatRoom>
-        <ChatRoom.RightSide>
+        <ChatRoom.LeftSide>
           <ChatRoom.Header />
           <ChatRoom.UserList activeUserId={Number(params.userId)} />
-        </ChatRoom.RightSide>
-        <ChatRoom.LeftSide>
+        </ChatRoom.LeftSide>
+        <ChatRoom.RightSide>
           <ChatRoom.TopBar />
           <ChatRoom.Conversations activeUserId={Number(params.userId)} currentUserId={user.id} />
           <ChatRoom.Form ref={formRef} onSubmit={handleSubmit} />
-        </ChatRoom.LeftSide>
+        </ChatRoom.RightSide>
       </ChatRoom>
       <div className="fixed bottom-0 right-0">
         <div className="relative p-2">

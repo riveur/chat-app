@@ -32,7 +32,7 @@ export const ChatRoom = ({ children }: { children?: React.ReactNode }) => {
 
 const LeftSide = ({ children }: { children?: React.ReactNode }) => {
   return (
-    <div className="min-w-[300px] h-full overflow-y-auto border-l">
+    <div className="min-w-[300px] h-full flex flex-col border-l">
       {children}
     </div>
   );
@@ -42,7 +42,7 @@ ChatRoom.LeftSide = LeftSide;
 
 const Header = ({ title = 'Chat app' }: { title?: string }) => {
   return (
-    <div className="h-16 grid content-center">
+    <div className="min-h-[4rem] grid content-center">
       <h1 className="text-center text-xl font-bold">{title}</h1>
     </div>
   );
@@ -51,19 +51,12 @@ const Header = ({ title = 'Chat app' }: { title?: string }) => {
 ChatRoom.Header = Header;
 
 const UserList = ({ activeUserId }: { activeUserId?: User['id'] }) => {
-  const { data: users, isLoading, isSuccess, refetch } = useUsers();
+  const { data: users, isLoading, isSuccess, isError, refetch } = useUsers();
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col">
-        {Array.from({ length: 4 }).map((_, idx) => <SkeletonUserCard key={idx} />)}
-      </div>
-    );
-  }
-
-  if (!isSuccess) {
-    return (
-      <div className="flex flex-col">
+  return (
+    <div className="h-full flex flex-col overflow-y-auto">
+      {isLoading && Array.from({ length: 4 }).map((_, idx) => <SkeletonUserCard key={idx} />)}
+      {isError &&
         <div className="px-4 py-4 flex flex-col items-center gap-2">
           <AlertTriangle size={30} />
           <p className="font-bold text-lg">Error fetching users</p>
@@ -72,13 +65,8 @@ const UserList = ({ activeUserId }: { activeUserId?: User['id'] }) => {
             <span>Retry</span>
           </Button>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col">
-      {users.map((u) => <UserCard key={u.id} user={u} active={activeUserId === u.id} />)}
+      }
+      {isSuccess && users.map((u) => <UserCard key={u.id} user={u} active={activeUserId === u.id} />)}
     </div>
   );
 }
@@ -87,10 +75,8 @@ ChatRoom.UserList = UserList;
 
 const RightSide = ({ children }: { children?: React.ReactNode }) => {
   return (
-    <div className="h-full w-full border-x">
-      <div className="h-full w-full flex flex-col">
-        {children}
-      </div>
+    <div className="h-full w-full flex flex-col border-x">
+      {children}
     </div>
   );
 }

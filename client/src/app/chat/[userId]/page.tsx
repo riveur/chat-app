@@ -37,7 +37,9 @@ export default function Page({ params }: ChatPageProps) {
 
   useEffect(() => {
     const onReceiveMessage = (message: Message) => {
-      addMessageToConversation(message);
+      if (message.sender_id === Number(params.userId)) {
+        addMessageToConversation(message);
+      }
     };
 
     socket.on('receive:message', onReceiveMessage);

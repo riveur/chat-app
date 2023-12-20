@@ -3,8 +3,6 @@
 import { ChatRoom } from "@/components/chat-room";
 import { ThemeToggler } from "@/components/themes/theme-toggler";
 import { useAuth } from "@/hooks/useAuth";
-import { useClient } from "@/hooks/useClient";
-import { useConversations } from "@/hooks/useConversations";
 import { useReceiveMessageMutation } from "@/hooks/useReceiveMessageMutation";
 import { useSendMessageMutation } from "@/hooks/useSendMessageMutation";
 import { socket } from "@/lib/socket";
@@ -17,14 +15,12 @@ interface ChatPageProps {
 }
 
 export default function Page({ params }: ChatPageProps) {
-  const isClient = useClient();
   const formRef = useRef<HTMLFormElement>(null);
   const { mutate: sendMessage } = useSendMessageMutation();
   const { mutate: messageReceived } = useReceiveMessageMutation();
   const user = useUserStore(state => state.user);
 
   useAuth();
-  useConversations(Number(params.userId));
 
   useEffect(() => {
     if (user) {
@@ -50,7 +46,7 @@ export default function Page({ params }: ChatPageProps) {
     });
   }
 
-  if (!user || !isClient) return null;
+  if (!user) return null;
 
   return (
     <main className="h-full">

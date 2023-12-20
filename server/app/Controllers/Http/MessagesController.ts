@@ -10,12 +10,12 @@ export default class MessagesController {
     const message = await Message.create({ ...payload, senderId: auth.user!.id });
 
     const receiverSocketId = Ws.connectedUsers.get(message.receiverId.toString());
+    const serializedMessage = message.serialize({ fields: { pick: ['content', 'sender_id', 'receiver_id', 'created_at'] } });
 
-    if (receiverSocketId && receiverSocketId !== auth.user!.id.toString()) {
-      const serializedMessage = message.serialize({ fields: { pick: ['content', 'sender_id', 'receiver_id', 'created_at'] } });
+    if (receiverSocketId && message.receiverId !== auth.user!.id) {
       Ws.io.to(receiverSocketId).emit('receive:message', { ...serializedMessage, receiver_id: message.senderId });
     }
 
-    return response.noContent();
+    return response.ok(serializedMessage);
   }
 }

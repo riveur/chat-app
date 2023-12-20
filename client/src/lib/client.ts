@@ -4,6 +4,7 @@ import {
   UserValidation,
   UsersValidation,
   MessageSchema as Message,
+  MessageValidation,
 } from "@/lib/validation";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -50,6 +51,7 @@ export async function getUsers() {
 }
 
 export async function getConversations(userId?: UserSchema['id']) {
+  await new Promise(resolve => setTimeout(resolve, 1000));
   return fetch(`${API_URL}/api/users/conversations/${userId}`, {
     method: 'GET',
     headers: defaultsHeaders,
@@ -66,5 +68,6 @@ export async function sendMessage(data: Pick<Message, "content" | "receiver_id">
     credentials: 'include',
     body: JSON.stringify({ content: data.content, receiverId: data.receiver_id })
   })
-    .then(response => response.ok ? response.status : Promise.reject(response.json()));
+    .then(response => response.json())
+    .then(MessageValidation.parse);
 }

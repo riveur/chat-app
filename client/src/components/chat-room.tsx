@@ -5,7 +5,7 @@ import { HTMLAttributes, forwardRef, FC, useRef, useEffect, } from "react";
 import { UserSchema as User, MessageSchema as Message } from "@/lib/validation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, MessageSquare, RotateCw } from 'lucide-react';
+import { AlertTriangle, Loader2, MessageSquare, RotateCw } from 'lucide-react';
 import { SendMessageForm, SendMessageFormInputs } from "./forms/send-message-form";
 import { SubmitHandler } from "react-hook-form";
 import { logout } from "@/lib/client";
@@ -16,7 +16,6 @@ import { QUERIES_KEYS } from "@/stores/queries-keys";
 import Link, { LinkProps } from "next/link";
 import { useUsers } from "@/hooks/useUsers";
 import { Skeleton } from "./ui/skeleton";
-import { useChatRoomStore } from "@/stores/useChatRoomStore";
 import { useConversations } from "@/hooks/useConversations";
 
 
@@ -122,11 +121,9 @@ const TopBar = ({ title = 'Messages' }: { title?: string }) => {
 ChatRoom.TopBar = TopBar;
 
 const Conversations = ({ activeUserId, currentUserId }: { activeUserId: User['id'], currentUserId: User['id'] }) => {
-
-  const conversations = useChatRoomStore(state => state.conversations);
   const messagesWrapperRef = useRef<HTMLDivElement>(null);
 
-  useConversations(activeUserId);
+  const { data: conversations, isSuccess, isLoading, isError, refetch } = useConversations(activeUserId);
 
   useEffect(() => {
     if (messagesWrapperRef.current) {
@@ -136,8 +133,28 @@ const Conversations = ({ activeUserId, currentUserId }: { activeUserId: User['id
 
   return (
     <div ref={messagesWrapperRef} className="h-full flex flex-col gap-6 p-4 overflow-y-auto">
-      {(conversations.length !== 0) && <Messages messages={conversations} senderId={currentUserId} />}
-      {(conversations.length === 0) &&
+      {isLoading &&
+        <div className="flex justify-center items-center h-full">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="animate-spin" size={30} />
+            <p className="font-bold text-lg">Loading messages...</p>
+          </div>
+        </div>
+      }
+      {isError &&
+        <div className="flex justify-center items-center h-full">
+          <div className="flex flex-col items-center gap-4">
+            <AlertTriangle size={30} />
+            <p className="font-bold text-lg">Error fetching messages</p>
+            <Button className="flex gap-2 items-center" variant="ghost" onClick={() => refetch()}>
+              <RotateCw className="w-4 h-4" />
+              <span>Retry</span>
+            </Button>
+          </div>
+        </div>
+      }
+      {isSuccess && (conversations.length !== 0) && <Messages messages={conversations} senderId={currentUserId} />}
+      {isSuccess && (conversations.length === 0) &&
         <div className="flex justify-center items-center h-full">
           <div className="flex flex-col items-center gap-4">
             <MessageSquare size={60} />

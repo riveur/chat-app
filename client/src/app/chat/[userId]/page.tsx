@@ -5,14 +5,12 @@ import { ThemeToggler } from "@/components/themes/theme-toggler";
 import { useAuth } from "@/hooks/useAuth";
 import { useClient } from "@/hooks/useClient";
 import { useConversations } from "@/hooks/useConversations";
-import { sendMessage } from "@/lib/client";
+import { useReceiveMessageMutation } from "@/hooks/useReceiveMessageMutation";
+import { useSendMessageMutation } from "@/hooks/useSendMessageMutation";
 import { socket } from "@/lib/socket";
 import { MessageSchema as Message } from "@/lib/validation";
-import { QUERIES_KEYS } from "@/stores/queries-keys";
-import { useChatRoomStore } from "@/stores/useChatRoomStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useEffect, useRef } from "react";
-import { useQueryClient } from "react-query";
 
 interface ChatPageProps {
   params: { userId: string }
@@ -21,10 +19,9 @@ interface ChatPageProps {
 export default function Page({ params }: ChatPageProps) {
   const isClient = useClient();
   const formRef = useRef<HTMLFormElement>(null);
-  const conversations = useChatRoomStore(state => state.conversations);
-  const addMessageToConversation = useChatRoomStore(state => state.addMessageToConversation);
+  const { mutate: sendMessage } = useSendMessageMutation();
+  const { mutate: messageReceived } = useReceiveMessageMutation();
   const user = useUserStore(state => state.user);
-  const queryClient = useQueryClient();
 
   useAuth();
   useConversations(Number(params.userId));
@@ -37,9 +34,7 @@ export default function Page({ params }: ChatPageProps) {
 
   useEffect(() => {
     const onReceiveMessage = (message: Message) => {
-      if (message.sender_id === Number(params.userId)) {
-        addMessageToConversation(message);
-      }
+      messageReceived(message);
     };
 
     socket.on('receive:message', onReceiveMessage);
@@ -50,13 +45,9 @@ export default function Page({ params }: ChatPageProps) {
   });
 
   const handleSubmit = async (data: { content: string }) => {
-    sendMessage({ content: data.content, receiver_id: Number(params.userId) })
-      .then(() => {
-        queryClient.invalidateQueries([QUERIES_KEYS.conversations, Number(params.userId)]);
-      })
-      .finally(() => {
-        formRef.current?.reset();
-      });
+    sendMessage({ content: data.content, receiver_id: Number(params.userId) }, {
+      onSettled: () => formRef.current?.reset()
+    });
   }
 
   if (!user || !isClient) return null;

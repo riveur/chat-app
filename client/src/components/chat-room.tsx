@@ -11,7 +11,6 @@ import { SubmitHandler } from "react-hook-form";
 import { logout } from "@/lib/client";
 import { socket } from "@/lib/socket";
 import { useQueryClient } from "react-query";
-import { useRouter } from "next/navigation";
 import { QUERIES_KEYS } from "@/stores/queries-keys";
 import Link, { LinkProps } from "next/link";
 import { useUsers } from "@/hooks/useUsers";
@@ -100,14 +99,12 @@ ChatRoom.LeftSide = LeftSide;
 
 const TopBar = ({ title = 'Messages' }: { title?: string }) => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const handleLogout = () => {
     logout()
       .then(() => {
         socket.disconnect();
         queryClient.invalidateQueries(QUERIES_KEYS.auth);
-        router.replace('/login');
       });
   }
   return (

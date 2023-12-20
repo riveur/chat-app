@@ -16,7 +16,7 @@ export function useAuth() {
     retry: false,
     refetchOnMount: false,
     onError(err) {
-      router.push('/login');
+      router.replace('/login');
     },
   });
 

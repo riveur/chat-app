@@ -5,7 +5,7 @@ import { HTMLAttributes, forwardRef, FC, useRef, useEffect, } from "react";
 import { UserSchema as User, MessageSchema as Message } from "@/lib/validation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Loader2, MessageSquare, RotateCw } from 'lucide-react';
+import { AlertTriangle, Check, Loader2, LogOut, MessageSquare, Moon, Palette, RotateCw, Settings, Sun } from 'lucide-react';
 import { SendMessageForm, SendMessageFormInputs } from "./forms/send-message-form";
 import { SubmitHandler } from "react-hook-form";
 import { logout } from "@/lib/client";
@@ -16,16 +16,15 @@ import Link, { LinkProps } from "next/link";
 import { useUsers } from "@/hooks/useUsers";
 import { Skeleton } from "./ui/skeleton";
 import { useConversations } from "@/hooks/useConversations";
+import { useUserStore } from "@/stores/useUserStore";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { useTheme } from "next-themes";
 
 
 export const ChatRoom = ({ children }: { children?: React.ReactNode }) => {
   return (
-    <div className="container h-full">
-      <section className="h-full flex flex-col">
-        <div className="flex w-full h-full overflow-hidden">
-          {children}
-        </div>
-      </section>
+    <div className="h-full flex overflow-hidden">
+      {children}
     </div>
   );
 }
@@ -73,6 +72,78 @@ const UserList = ({ activeUserId }: { activeUserId?: User['id'] }) => {
 
 ChatRoom.UserList = UserList;
 
+const ChatRoomSettingsDropdown = () => {
+  const { setTheme, theme } = useTheme();
+  const queryClient = useQueryClient();
+
+  const handleLogout = () => {
+    logout()
+      .then(() => {
+        socket.disconnect();
+        queryClient.invalidateQueries(QUERIES_KEYS.auth);
+      });
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="rounded-full">
+          <Settings />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Theme
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem
+                onClick={() => setTheme('light')}
+                className="flex items-center gap-2"
+              >
+                {theme !== 'light' ? <Sun className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTheme('dark')}
+                className="flex items-center gap-2 w-full"
+              >
+                {theme !== 'dark' ? <Moon className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                Dark
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="flex items-center justify-start gap-2"
+        >
+          <LogOut className="w-4 h-4" />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+const Footer = () => {
+  const user = useUserStore(state => state.user);
+
+  return (
+    <div className="flex justify-between items-center border-t p-2">
+      <div className="flex items-center gap-2">
+        <UserAvatar username={user?.username} />
+        <span className="font-semibold">{user?.username}</span>
+      </div>
+      <ChatRoomSettingsDropdown />
+    </div>
+  );
+}
+
+ChatRoom.Footer = Footer;
+
 const RightSide = ({ children }: { children?: React.ReactNode }) => {
   return (
     <div className="h-full w-full flex flex-col border-x">
@@ -84,19 +155,10 @@ const RightSide = ({ children }: { children?: React.ReactNode }) => {
 ChatRoom.RightSide = RightSide;
 
 const TopBar = ({ title = 'Messages' }: { title?: string }) => {
-  const queryClient = useQueryClient();
 
-  const handleLogout = () => {
-    logout()
-      .then(() => {
-        socket.disconnect();
-        queryClient.invalidateQueries(QUERIES_KEYS.auth);
-      });
-  }
   return (
     <div className="border-b h-16 p-4 flex justify-between items-center">
       <span className="font-bold">{title}</span>
-      <Button onClick={() => handleLogout()}>Log out</Button>
     </div>
   );
 }

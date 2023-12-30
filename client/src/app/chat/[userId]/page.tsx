@@ -1,7 +1,6 @@
 "use client";
 
 import { ChatRoom } from "@/components/chat-room";
-import { ThemeToggler } from "@/components/themes/theme-toggler";
 import { useAuth } from "@/hooks/useAuth";
 import { useReceiveMessageMutation } from "@/hooks/useReceiveMessageMutation";
 import { useSendMessageMutation } from "@/hooks/useSendMessageMutation";
@@ -49,11 +48,12 @@ export default function Page({ params }: ChatPageProps) {
   if (!user) return null;
 
   return (
-    <main className="h-full">
+    <main className="container h-full">
       <ChatRoom>
         <ChatRoom.LeftSide>
           <ChatRoom.Header />
           <ChatRoom.UserList activeUserId={Number(params.userId)} />
+          <ChatRoom.Footer />
         </ChatRoom.LeftSide>
         <ChatRoom.RightSide>
           <ChatRoom.TopBar />
@@ -61,11 +61,6 @@ export default function Page({ params }: ChatPageProps) {
           <ChatRoom.Form ref={formRef} onSubmit={handleSubmit} />
         </ChatRoom.RightSide>
       </ChatRoom>
-      <div className="fixed bottom-0 right-0">
-        <div className="relative p-2">
-          <ThemeToggler />
-        </div>
-      </div>
     </main>
   )
 }

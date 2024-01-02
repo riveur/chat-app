@@ -16,11 +16,11 @@ import Link, { LinkProps } from "next/link";
 import { useUsers } from "@/hooks/useUsers";
 import { Skeleton } from "./ui/skeleton";
 import { useConversations } from "@/hooks/useConversations";
-import { useUserStore } from "@/stores/useUserStore";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
 import { useUser } from "@/hooks/useUser";
 import { useConnectedUsersStore } from "@/stores/useConnectedUsersStore";
+import { useAuth } from "@/hooks/useAuth";
 
 
 export const ChatRoom = ({ children }: { children?: React.ReactNode }) => {
@@ -131,7 +131,7 @@ const ChatRoomSettingsDropdown = () => {
 }
 
 const Footer = () => {
-  const user = useUserStore(state => state.user);
+  const { data: user } = useAuth();
 
   return (
     <div className="flex justify-between items-center border-t p-2">

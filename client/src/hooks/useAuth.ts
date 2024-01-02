@@ -1,30 +1,23 @@
 "use client";
 
 import { getCurrentUser } from "@/lib/client";
+import { socket } from "@/lib/socket";
 import { QUERIES_KEYS } from "@/stores/queries-keys";
-import { useUserStore } from "@/stores/useUserStore";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useQuery } from "react-query";
 
 export function useAuth() {
-  const setUser = useUserStore((state) => state.setUser);
   const router = useRouter();
-  const query = useQuery({
+  return useQuery({
     queryKey: QUERIES_KEYS.auth,
     queryFn: getCurrentUser,
     retry: false,
     refetchOnMount: false,
     onError(err) {
+      if (socket.connected) {
+        socket.disconnect();
+      }
       router.replace('/login');
     },
   });
-
-  useEffect(() => {
-    if (query.data) {
-      setUser(query.data);
-    }
-  }, [query.data, setUser]);
-
-  return query;
 }

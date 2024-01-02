@@ -7,7 +7,6 @@ import { useSendMessageMutation } from "@/hooks/useSendMessageMutation";
 import { socket } from "@/lib/socket";
 import { MessageSchema as Message, UserSchema as User } from "@/lib/validation";
 import { useConnectedUsersStore } from "@/stores/useConnectedUsersStore";
-import { useUserStore } from "@/stores/useUserStore";
 import { useEffect, useRef } from "react";
 
 interface ChatPageProps {
@@ -18,12 +17,11 @@ export default function Page({ params }: ChatPageProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const { mutate: sendMessage } = useSendMessageMutation();
   const { mutate: messageReceived } = useReceiveMessageMutation();
-  const user = useUserStore(state => state.user);
   const initConnectedUsers = useConnectedUsersStore(state => state.init);
   const addConnectedUser = useConnectedUsersStore(state => state.add);
   const removeConnectedUser = useConnectedUsersStore(state => state.remove);
 
-  useAuth();
+  const { data: user } = useAuth();
 
   useEffect(() => {
     if (user) {
@@ -37,7 +35,6 @@ export default function Page({ params }: ChatPageProps) {
     };
 
     const onInitConnectedUsers = (users: Array<User['id']>) => {
-      console.log(users);
       initConnectedUsers(users);
     }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { getUser } from "@/lib/client";
+import { getCurrentUser } from "@/lib/client";
 import { QUERIES_KEYS } from "@/stores/queries-keys";
 import { useUserStore } from "@/stores/useUserStore";
 import { useRouter } from "next/navigation";
@@ -12,7 +12,7 @@ export function useAuth() {
   const router = useRouter();
   const query = useQuery({
     queryKey: QUERIES_KEYS.auth,
-    queryFn: getUser,
+    queryFn: getCurrentUser,
     retry: false,
     refetchOnMount: false,
     onError(err) {

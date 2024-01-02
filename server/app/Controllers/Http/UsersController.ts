@@ -30,4 +30,9 @@ export default class UsersController {
 
     return response.ok(conversations);
   }
+
+  public async show({ params, response }: HttpContextContract) {
+    const user = await User.findOrFail(params.id);
+    return response.ok(user);
+  }
 }

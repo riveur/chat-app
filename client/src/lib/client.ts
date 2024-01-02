@@ -30,7 +30,7 @@ export async function logout() {
   });
 }
 
-export async function getUser() {
+export async function getCurrentUser() {
   return fetch(`${API_URL}/api/auth/me`, {
     method: 'GET',
     headers: defaultsHeaders,
@@ -48,6 +48,16 @@ export async function getUsers() {
   })
     .then(response => response.json())
     .then(UsersValidation.parse);
+}
+
+export async function getUser(id: UserSchema['id']) {
+  return fetch(`${API_URL}/api/users/${id}`, {
+    method: 'GET',
+    headers: defaultsHeaders,
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(UserValidation.parse);
 }
 
 export async function getConversations(userId?: UserSchema['id']) {

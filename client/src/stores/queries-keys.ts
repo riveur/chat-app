@@ -3,4 +3,4 @@ export const QUERIES_KEYS = {
   auth: 'auth',
   users: 'users',
   conversations: 'conversations'
-}
+} as const;

@@ -19,6 +19,7 @@ import { useConversations } from "@/hooks/useConversations";
 import { useUserStore } from "@/stores/useUserStore";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
+import { useUser } from "@/hooks/useUser";
 
 
 export const ChatRoom = ({ children }: { children?: React.ReactNode }) => {
@@ -168,7 +169,14 @@ ChatRoom.TopBar = TopBar;
 const Conversations = ({ activeUserId, currentUserId }: { activeUserId: User['id'], currentUserId: User['id'] }) => {
   const messagesWrapperRef = useRef<HTMLDivElement>(null);
 
-  const { data: conversations, isSuccess, isLoading, isError, refetch } = useConversations(activeUserId);
+  const { data: activeUser, isSuccess: isSucessActiveUser } = useUser(activeUserId);
+  const {
+    data: conversations,
+    isSuccess: isSuccessConversations,
+    isLoading: isLoadingConversations,
+    isError: isErrorConversations,
+    refetch: refetchConversations
+  } = useConversations(activeUserId, { enabled: !!activeUser });
 
   useEffect(() => {
     if (messagesWrapperRef.current) {
@@ -178,7 +186,7 @@ const Conversations = ({ activeUserId, currentUserId }: { activeUserId: User['id
 
   return (
     <div ref={messagesWrapperRef} className="h-full flex flex-col gap-6 p-4 overflow-y-auto">
-      {isLoading &&
+      {isLoadingConversations &&
         <div className="flex justify-center items-center h-full">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="animate-spin" size={30} />
@@ -186,20 +194,20 @@ const Conversations = ({ activeUserId, currentUserId }: { activeUserId: User['id
           </div>
         </div>
       }
-      {isError &&
+      {isErrorConversations &&
         <div className="flex justify-center items-center h-full">
           <div className="flex flex-col items-center gap-4">
             <AlertTriangle size={30} />
             <p className="font-bold text-lg">Error fetching messages</p>
-            <Button className="flex gap-2 items-center" variant="ghost" onClick={() => refetch()}>
+            <Button className="flex gap-2 items-center" variant="ghost" onClick={() => refetchConversations()}>
               <RotateCw className="w-4 h-4" />
               <span>Retry</span>
             </Button>
           </div>
         </div>
       }
-      {isSuccess && (conversations.length !== 0) && <Messages messages={conversations} senderId={currentUserId} />}
-      {isSuccess && (conversations.length === 0) &&
+      {(isSuccessConversations && isSucessActiveUser && (conversations.length !== 0)) && <Messages messages={conversations} senderId={currentUserId} />}
+      {isSuccessConversations && (conversations.length === 0) &&
         <div className="flex justify-center items-center h-full">
           <div className="flex flex-col items-center gap-4">
             <MessageSquare size={60} />
@@ -274,9 +282,10 @@ const ChatMessage = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement> & 
   currentUserId: User['id'],
 }>(({ message, currentUserId, className, ...props }, ref) => {
   const isSent = message.sender_id === currentUserId;
+  const { data: activeUser } = useUser(message.sender_id);
   return (
     <div ref={ref} {...props} className={cn(className, 'flex items-center gap-4', isSent && 'flex-row-reverse')}>
-      {!isSent && <UserAvatar url="https://ui-avatars.com/api/?name=Unknown&size=128" />}
+      {!isSent && <UserAvatar url={activeUser?.avatar_url} />}
       <span
         className={cn('border border-border rounded-full py-2 px-4', isSent ? 'dark:bg-blue-500 bg-slate-300' : 'bg-secondary')}
       >

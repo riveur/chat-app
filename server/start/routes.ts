@@ -30,6 +30,7 @@ Route.group(() => {
 Route.group(() => {
   Route.group(() => {
     Route.get('/', 'UsersController.index');
+    Route.get('/:id', 'UsersController.show');
     Route.get('/conversations/:userId', 'UsersController.conversations');
   }).prefix('users')
   Route.post('/messages/send', 'MessagesController.send');

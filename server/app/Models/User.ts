@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, HasMany, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, HasMany, column, computed, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import Message from './Message'
 
 export default class User extends BaseModel {
@@ -11,6 +11,11 @@ export default class User extends BaseModel {
 
   @column()
   public email: string
+
+  @computed()
+  public get avatar_url() {
+    return `https://ui-avatars.com/api/?name=${this.username}&size=128`
+  }
 
   @column({ serializeAs: null })
   public password: string

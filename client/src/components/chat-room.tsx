@@ -134,7 +134,7 @@ const Footer = () => {
   return (
     <div className="flex justify-between items-center border-t p-2">
       <div className="flex items-center gap-2">
-        <UserAvatar username={user?.username} />
+        <UserAvatar url={user?.avatar_url} />
         <span className="font-semibold">{user?.username}</span>
       </div>
       <ChatRoomSettingsDropdown />
@@ -224,13 +224,12 @@ const Form = forwardRef<HTMLFormElement, { onSubmit: SubmitHandler<SendMessageFo
 Form.displayName = 'Form';
 ChatRoom.Form = Form;
 
-const UserAvatar: FC<{ username?: string, status?: 'active' | 'inactive', showStatus?: boolean }> = ({ username = 'u', showStatus = false, status = 'inactive' }) => {
+const UserAvatar: FC<{ url?: string, status?: 'active' | 'inactive', showStatus?: boolean }> = ({ url, showStatus = false, status = 'inactive' }) => {
   const statusClass = { active: 'bg-green-500', 'inactive': 'bg-gray-500' }[status];
   return (
     <div className="relative">
       <Avatar>
-        <AvatarImage src={`https://ui-avatars.com/api/?background=random&name=${username}`} />
-        <AvatarFallback>{username.at(0)?.toUpperCase()}</AvatarFallback>
+        <AvatarImage src={url} />
       </Avatar>
       {showStatus && <span className={cn("h-3 w-3 rounded-full absolute right-0 bottom-0 border", statusClass)}></span>}
     </div>
@@ -253,7 +252,7 @@ const UserCard = forwardRef<HTMLAnchorElement, UserCardProps>(({ user, active = 
       href={`/chat/${user.id}`}
       {...props}
     >
-      <UserAvatar username={user.username} showStatus status="active" />
+      <UserAvatar url={user.avatar_url} showStatus status="active" />
       <span className="font-semibold">{user.username}</span>
     </Link>
   );
@@ -271,16 +270,17 @@ const SkeletonUserCard = () => {
 }
 
 const ChatMessage = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement> & {
-  content: string,
-  sended: boolean,
-}>(({ content, sended, className, ...props }, ref) => {
+  message: Message,
+  currentUserId: User['id'],
+}>(({ message, currentUserId, className, ...props }, ref) => {
+  const isSent = message.sender_id === currentUserId;
   return (
-    <div ref={ref} {...props} className={cn(className, 'flex items-center gap-4', sended && 'flex-row-reverse')}>
-      {!sended && <UserAvatar />}
+    <div ref={ref} {...props} className={cn(className, 'flex items-center gap-4', isSent && 'flex-row-reverse')}>
+      {!isSent && <UserAvatar url="https://ui-avatars.com/api/?name=Unknown&size=128" />}
       <span
-        className={cn('border border-border rounded-full py-2 px-4', sended ? 'dark:bg-blue-500 bg-slate-300' : 'bg-secondary')}
+        className={cn('border border-border rounded-full py-2 px-4', isSent ? 'dark:bg-blue-500 bg-slate-300' : 'bg-secondary')}
       >
-        {content}
+        {message.content}
       </span>
     </div>
   );
@@ -295,8 +295,8 @@ const Messages: FC<{ messages: Message[], senderId: number }> = ({ messages, sen
         messages.map((message, idx) =>
           <ChatMessage
             key={idx}
-            content={message.content}
-            sended={message.sender_id === senderId}
+            message={message}
+            currentUserId={senderId}
           />)
       }
     </>

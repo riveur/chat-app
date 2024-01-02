@@ -4,6 +4,7 @@ export const UserValidation = z.object({
   id: z.number(),
   username: z.string(),
   email: z.string().email(),
+  avatar_url: z.string().url(),
   created_at: z.string().datetime({ offset: true }),
   updated_at: z.string().datetime({ offset: true })
 });

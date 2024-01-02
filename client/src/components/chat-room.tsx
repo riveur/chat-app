@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { HTMLAttributes, forwardRef, FC, useRef, useEffect, } from "react";
 import { UserSchema as User, MessageSchema as Message } from "@/lib/validation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Check, Loader2, LogOut, MessageSquare, Moon, Palette, RotateCw, Settings, Sun } from 'lucide-react';
 import { SendMessageForm, SendMessageFormInputs } from "./forms/send-message-form";
@@ -20,6 +20,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
 import { useUser } from "@/hooks/useUser";
+import { useConnectedUsersStore } from "@/stores/useConnectedUsersStore";
 
 
 export const ChatRoom = ({ children }: { children?: React.ReactNode }) => {
@@ -250,6 +251,8 @@ interface UserCardProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElemen
 }
 
 const UserCard = forwardRef<HTMLAnchorElement, UserCardProps>(({ user, active = false, ...props }, ref) => {
+  const connectedUsers = useConnectedUsersStore(state => state.connectedUsers);
+
   return (
     <Link
       ref={ref}
@@ -260,7 +263,7 @@ const UserCard = forwardRef<HTMLAnchorElement, UserCardProps>(({ user, active = 
       href={`/chat/${user.id}`}
       {...props}
     >
-      <UserAvatar url={user.avatar_url} showStatus status="active" />
+      <UserAvatar url={user.avatar_url} showStatus status={connectedUsers.has(user.id) ? 'active' : 'inactive'} />
       <span className="font-semibold">{user.username}</span>
     </Link>
   );

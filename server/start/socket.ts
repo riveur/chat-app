@@ -33,10 +33,12 @@ Ws.io.on('connection', (socket) => {
 
   Ws.connectedUsers.set(userId.toString(), socket.id);
 
-  socket.broadcast.emit('user:connected', { userId });
+  socket.emit('init:connected-users', [...Ws.connectedUsers.keys()].map(Number));
+
+  socket.broadcast.emit('user:connected', userId);
 
   socket.on('disconnect', () => {
     Ws.connectedUsers.delete(userId.toString());
-    Ws.io.emit('user:disconnected', { userId });
+    Ws.io.emit('user:disconnected', userId);
   });
 });

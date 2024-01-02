@@ -5,7 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useReceiveMessageMutation } from "@/hooks/useReceiveMessageMutation";
 import { useSendMessageMutation } from "@/hooks/useSendMessageMutation";
 import { socket } from "@/lib/socket";
-import { MessageSchema as Message } from "@/lib/validation";
+import { MessageSchema as Message, UserSchema as User } from "@/lib/validation";
+import { useConnectedUsersStore } from "@/stores/useConnectedUsersStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useEffect, useRef } from "react";
 
@@ -18,6 +19,9 @@ export default function Page({ params }: ChatPageProps) {
   const { mutate: sendMessage } = useSendMessageMutation();
   const { mutate: messageReceived } = useReceiveMessageMutation();
   const user = useUserStore(state => state.user);
+  const initConnectedUsers = useConnectedUsersStore(state => state.init);
+  const addConnectedUser = useConnectedUsersStore(state => state.add);
+  const removeConnectedUser = useConnectedUsersStore(state => state.remove);
 
   useAuth();
 
@@ -32,10 +36,29 @@ export default function Page({ params }: ChatPageProps) {
       messageReceived(message);
     };
 
+    const onInitConnectedUsers = (users: Array<User['id']>) => {
+      console.log(users);
+      initConnectedUsers(users);
+    }
+
+    const onUserConnected = (userId: User['id']) => {
+      addConnectedUser(userId);
+    }
+
+    const onUserDisconnected = (userId: User['id']) => {
+      removeConnectedUser(userId);
+    }
+
     socket.on('receive:message', onReceiveMessage);
+    socket.on('init:connected-users', onInitConnectedUsers);
+    socket.on('user:connected', onUserConnected);
+    socket.on('user:disconnected', onUserDisconnected);
 
     return () => {
       socket.off('receive:message', onReceiveMessage);
+      socket.off('init:connected-users', onInitConnectedUsers);
+      socket.off('user:connected', onUserConnected);
+      socket.off('user:disconnected', onUserDisconnected);
     }
   });
 
